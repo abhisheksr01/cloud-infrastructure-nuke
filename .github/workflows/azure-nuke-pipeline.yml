@@ -1,0 +1,22 @@
+name: nuke-azure-resource-groups
+
+on:
+  schedule:
+    - cron:  '0 17 * * 5'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  nuke-azure-resource-groups:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZ_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZ_TENANT_ID }}
+        subscription-id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
+    - run: make azure-nuke-resource-groups

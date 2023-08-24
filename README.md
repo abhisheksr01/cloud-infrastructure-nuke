@@ -3,6 +3,7 @@
 - [Pipelines Status](#pipelines-status)
 - [Introduction](#introduction)
 - [AWS](#aws)
+- [Azure](#azure)
 - [Terraform Infrastructure](#terraform-infrastructure)
 
 # Pipelines Status
@@ -236,6 +237,57 @@ This is the list of things (Non Prioritized) which we need to do to make aws-nuk
 - Check the best practice for running AWS-NUKE & assert the current implementation. ex single config vs multiple.
 - Use python panda for better visualization of the aws-nuke stdouts.
 - Execute AWS-Nuke <b>plan/scan</b> against the production account. Just to see what orphaned resources we have.DO NOT RUN DESTROY COMMAND IN PROD ACCOUNT.
+
+</details>
+
+# Azure
+
+We are using `az cli` command based script to delete unwanted Resource Groups from Azure.
+
+You can check:
+- The script code in [./azure](./azure) directory.
+- Terraform Code in [./tf-infrastructure/azure](./tf-infrastructure/azure/) directory.
+- Pipeline Configuration in [.github/workflows/azure-nuke-pipeline.yml](.github/workflows/azure-nuke-pipeline.yml)
+
+We have implemented OIDC-based authentication to enhance security when providing access to Azure Resources through our Github Actions Pipeline. 
+
+<details>
+  <summary>Click here to see detailed Implementation:</summary>
+
+#### Setting Up OIDC Federated credentials for Github Actions.
+
+The steps outlined below were followed to configure the OIDC setup.
+
+- Create a Service Principal with OIDC Federated Credentials
+
+Review the Terraform code located at [./tf-infrastructure/azure/service-principal.tf](./tf-infrastructure/azure/service-principal.tf) for insights into establishing the Service Principal Name (SPN) using OIDC Federated credentials through Terraform.
+
+  Note: You may want to change `subject` attribute based on your requirements.
+
+- Update the Github Actions pipeline YAML to allow OIDC by adding below permissions:
+  ```yaml
+  permissions:
+    id-token: write
+    contents: read
+  ```
+  
+- Add below Azure Credentials in Github Secrets of the repository
+  - Service Principal CLIENT_ID as `AZ_CLIENT_ID`
+  - TENANT_ID as `AZ_TENANT_ID`
+  - SUBSCRIPTION_ID as `AZ_SUBSCRIPTION_ID`
+
+- Update Github Actions Pipeline YAML
+  
+  Add them as below:
+  ```yaml
+  - uses: azure/login@v1
+    with:
+      client-id: ${{ secrets.AZ_CLIENT_ID }}
+      tenant-id: ${{ secrets.AZ_TENANT_ID }}
+      subscription-id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
+
+  ```
+  The official documentation explaining the process can be found [here](https://learn.microsoft.com/en-us/azure/active-directory/workload-identities/workload-identity-federation-create-trust?pivots=identity-wif-apps-methods-azp#github-actions).
 
 </details>
 
