@@ -4,6 +4,7 @@
 - [Introduction](#introduction)
 - [AWS](#aws)
 - [Azure](#azure)
+- [Google Cloud Platform](#google-cloud-platform)
 - [Terraform Infrastructure](#terraform-infrastructure)
 
 # Pipelines Status
@@ -118,7 +119,6 @@ Log in to the respective AWS Account against which you would like to perform AWS
 At the moment this repository has the configuration for `training` and `se-practices` accounts.
 
 Note: You must have Admin Rights to perform the aws nuke operations.
-
 
 ## AWS Nuke Execution
 ### On SE Practices Account
@@ -288,6 +288,47 @@ Review the Terraform code located at [./tf-infrastructure/azure/service-principa
 
   ```
   The official documentation explaining the process can be found [here](https://learn.microsoft.com/en-us/azure/active-directory/workload-identities/workload-identity-federation-create-trust?pivots=identity-wif-apps-methods-azp#github-actions).
+
+</details>
+
+# Google Cloud Platform
+
+We are using `gcloud cli` command based script to delete projects in the Google Cloud Platform.
+
+You can check:
+- The script code in [./gcp](./gcp) directory.
+- Terraform Code in [./tf-infrastructure/gcp](./tf-infrastructure/gcp/) directory.
+- Pipeline Configuration in [.github/workflows/gcp-nuke-pipeline.yml](.github/workflows/gcp-nuke-pipeline.yml)
+
+<details>
+  <summary>Click here to see some helpful gcloud commands:</summary>
+
+  - Authentication via Service Account
+    ```
+    gcloud auth activate-service-account [SERVICE_ACCOUNT_EMAIL] --key-file=[PATH_TO_CREDENTIALS_FILE]
+    ```
+
+  - WHO AM I Command:
+    ```
+    gcloud config list account --format "value(core.account)"
+    ```
+
+  - Set the GCP Project
+    ```
+    gcloud config set project $MY_PROJECT_ID
+    ```
+
+  - Finding GCP Project Creator (limited to 400 days)
+    ```
+    gcloud logging read --project gcp-projects-nuke \
+    --order=asc --limit=1 \
+    --format='table(protoPayload.methodName, protoPayload.authenticationInfo.principalEmail)'
+    ```
+
+  - Loading list of projects in CSV
+    ```
+    gcloud projects list --format='csv(createTime,lifecycleState,name,parent,projectId, projectNumber)' > gcp.csv
+    ```
 
 </details>
 
