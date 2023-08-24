@@ -1,17 +1,10 @@
 # Table of Content
 
-- [Pipelines Status](#pipelines-status)
 - [Introduction](#introduction)
 - [AWS](#aws)
 - [Azure](#azure)
 - [Google Cloud Platform](#google-cloud-platform)
 - [Terraform Infrastructure](#terraform-infrastructure)
-
-# Pipelines Status
-
-The pipelines are scheduled to run `every Friday at 17:00` in Github Actions.
-
-Although the real execution may vary based on availability of the executors.
 
 # Introduction
 
@@ -25,15 +18,28 @@ By doing so, we're not only saving a few bucks 💰 but also securing the resour
 
 This repository takes charge of eradicating transient infrastructure that has been set up in AWS, Azure, and GCP Cloud Accounts. So, let the cleaning begin! 🚀🔥
 
-Available Make Commands:
+All the pipelines are scheduled to run `every Friday at 17:00` in Github Actions.
 
-The codebase can be visualized as below:
+Although the real execution may vary based on availability of the executors.
+
+### Available Make Commands when executed from Root of this repo.
+
+```
+make help
+```
+![](./make-help.png)
+### The codebase can be visualized as below:
 
 ![Visualization of the codebase](./diagram.svg)
 
 # AWS
 
 We are using [AWS Nuke](https://github.com/rebuy-de/aws-nuke) for nuking the unwanted resources in the AWS Account (at the moment only aws-training & se-practices account).
+
+You can check:
+- The script code & YAML configs in [./aws](./aws) directory.
+- Terraform Code in [./tf-infrastructure/aws](./tf-infrastructure/aws/) directory.
+- Pipeline Configuration in [.github/workflows/aws-nuke-pipeline.yml](.github/workflows/aws-nuke-pipeline.yml)
 
 <details>
   <summary>Click here to see the details of AWS Nuke Implementation</summary>
