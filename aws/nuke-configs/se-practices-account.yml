@@ -1,0 +1,73 @@
+regions:
+- global
+- ap-northeast-1
+- ap-northeast-2
+- ap-northeast-3
+- ap-southeast-1
+- ap-southeast-2
+- ap-south-1
+- ca-central-1
+- eu-central-1
+- eu-west-1
+- eu-west-2
+- eu-west-3
+- eu-north-1
+- sa-east-1
+- us-east-1
+- us-east-2
+- us-west-1
+- us-west-2
+# Commented as they are not enabled & new regions require regional STS tokens for authentication thus causing 401 while AWS-NUKE execution
+# https://aws.amazon.com/premiumsupport/knowledge-center/iam-validate-access-credentials/
+# - ap-east-1
+# - me-south-1
+# - af-south-1
+# - eu-south-1
+
+account-blocklist:
+- "1234567890" # production
+
+resource-types:
+  excludes:
+  - IAMSAMLProvider
+
+accounts:
+  123456789012:
+    presets:
+    - "terraform"
+    - "others" # Refers to manual or non tf resources
+
+presets:
+  terraform:
+    filters:
+      IAMUser:
+      - "account-alerts"
+      IAMGroup:
+      - "account-alerts"
+      IAMUserGroupAttachment:
+      - "account-alerts -> account-alerts"
+      IAMGroupPolicy:
+      - "account-alerts -> account-alerts"
+      IAMUserPolicyAttachment:
+      - "account-alerts"
+      S3Bucket:
+      - type: glob
+        value: "s3://account-alerts*"
+      S3Object:
+      - type: glob
+        value: "s3://account-alerts-123456789012/*"
+      DynamoDBTable:
+      - "account-alerts-123456789012"
+      DynamoDBTableItem:
+      - "account-alerts-123456789012 -> account-alerts-123456789012/./terraform.tfstate-md5"
+  others:
+    filters:
+      IAMRole:
+      - "GoogleAdmins"
+      - "OrganizationAccountAccessRole"
+      - "aws-nuke-access-delegator-admin-role"
+      IAMRolePolicy:
+      - "OrganizationAccountAccessRole -> AdministratorAccess"
+      IAMRolePolicyAttachment:
+      - "GoogleAdmins -> AdministratorAccess"
+      - "aws-nuke-access-delegator-admin-role -> AdministratorAccess"

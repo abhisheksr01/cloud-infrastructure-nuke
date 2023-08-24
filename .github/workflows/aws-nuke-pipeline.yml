@@ -1,0 +1,45 @@
+name: nuke-aws-accounts
+
+on:
+  schedule:
+    - cron:  '0 17 * * 5'
+  workflow_dispatch:
+
+jobs:
+  se-practices:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: nuking se-practices account
+        env: # Or as an environment variable
+          ASSUME_ROLE_ARN: ${{ secrets.SE_PRACTICES_ROLE_ARN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        run: make aws-nuke-se-practices
+      - name: Upload nuke log
+        uses: actions/upload-artifact@v3
+        with:
+          name: se-practices-nuke-log
+          path: |
+            ./aws/nuke-configs/se-practices-nuke.log  
+            ./aws/nuke-configs/se-practices-nuke-error.log 
+  
+  training:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: nuking training account
+        env:
+          ASSUME_ROLE_ARN: ${{ secrets.TRAINING_ROLE_ARN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        run: make aws-nuke-training
+      - name: Upload nuke log
+        uses: actions/upload-artifact@v3
+        with:
+          name: training-nuke-log
+          path: |
+            ./aws/nuke-configs/training-nuke.log
+            ./aws/nuke-configs/training-nuke-error.log

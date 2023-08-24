@@ -1,0 +1,114 @@
+regions:
+# Regions are commented as we are still analyzing the scan output
+- global
+- ap-northeast-1
+- ap-northeast-2
+- ap-northeast-3
+- ap-southeast-1
+- ap-southeast-2
+- ap-south-1
+- ca-central-1
+- eu-central-1
+- eu-west-1
+- eu-west-2
+- eu-west-3
+- eu-north-1
+- sa-east-1
+- us-east-1
+- us-east-2
+- us-west-1
+- us-west-2
+# Commented as they are not enabled & new regions require regional STS tokens for authentication thus causing 401 while AWS-NUKE execution
+# https://aws.amazon.com/premiumsupport/knowledge-center/iam-validate-access-credentials/
+# - ap-east-1
+# - me-south-1
+# - af-south-1
+# - eu-south-1 
+
+account-blocklist:
+- "1234567890" # production
+
+resource-types:
+  excludes:
+  - IAMSAMLProvider
+  - IAMVirtualMFADevice
+  - Route53HealthCheck
+
+accounts:
+  689146710931:
+    presets:
+    - "terraform"
+    - "others" # Refers to manual or non tf resources
+
+presets:
+  terraform:
+    filters:
+      IAMUser:
+      - "account-alerts"
+      - "aws-nuke-access-delegator-user"
+      - "knowledge-share-usr"
+      IAMRole:
+      - "aws-nuke-access-delegator-admin-role"
+      IAMGroup:
+      - "account-alerts"
+      - "cross-account-admin-access-delegator-group"
+      IAMUserGroupAttachment:
+      - "account-alerts -> account-alerts"
+      - "aws-nuke-access-delegator-user -> cross-account-admin-access-delegator-group"
+      IAMGroupPolicy:
+      - "account-alerts -> account-alerts"
+      - "cross-account-admin-access-delegator-group -> se-practices-account-admin-access-sts-policy"
+      - "cross-account-admin-access-delegator-group -> training-account-admin-access-sts-policy"
+      - "cross-account-admin-access-delegator-group -> sts-assume-policy"
+      IAMGroupPolicyAttachment:
+      - "cross-account-admin-access-delegator-group -> AdministratorAccess"
+      - "SuperAdmin -> AdministratorAccess"
+      IAMUserPolicyAttachment:
+      - "account-alerts"
+      IAMRolePolicyAttachment:
+      - "aws-nuke-access-delegator-admin-role -> AdministratorAccess"
+      IAMUserAccessKey:
+      - "aws-nuke-access-delegator-user -> ABCDEFGHIJKL"
+      S3Bucket:
+      - type: glob
+        value: "s3://account-alerts*"
+      - type: glob
+        value: "s3://aws-nuke-tf-state"
+      - type: glob
+        value: "s3://knowledge-sharing-terraform"
+      S3Object:
+      - type: glob
+        value: "s3://aws-nuke-tf-state/s3/backend-state/*"
+      - type: glob
+        value: "s3://knowledge-sharing-terraform/*"
+      DynamoDBTable:
+      - "account-alerts-689146710931"
+      - "aws-nuke-tf-state"
+      DynamoDBTableItem:
+      - "aws-nuke-tf-state -> aws-nuke-tf-state/s3/backend-state/terraform.tfstate-md5"
+      NeptuneCluster:
+      - "knowledge-sharing"
+  others:
+    filters:
+      IAMUser:
+      - "WebAccessAdmin"
+      - "knowledge-share-usr"
+      S3Bucket:
+      - type: glob
+        value: "s3://asg-trail*"
+      S3Object:
+      - type: regex
+        value: "s3://asg-trail/.*"
+      IAMRole:
+      - "GoogleAdmins"
+      - "OrganizationAccountAccessRole"
+      IAMRolePolicy:
+      - "OrganizationAccountAccessRole -> AdministratorAccess"
+      IAMRolePolicyAttachment:
+      - "GoogleAdmins -> AdministratorAccess"
+      GlueDatabase:
+      - "google-sheets"
+      CloudTrailTrail:
+      - "asg-cloudtrail"
+      NeptuneCluster:
+      - "knowledge-sharing"
