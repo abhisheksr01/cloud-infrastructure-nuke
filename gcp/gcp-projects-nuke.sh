@@ -1,20 +1,47 @@
 #!/bin/bash
 set -e
 
+printMessage() {
+    printf "$1$1$1 $2 $1$1$1 - $3\n"
+}
+
+printf "
+███╗   ██╗██╗   ██╗██╗  ██╗██╗███╗   ██╗ ██████╗      ██████╗  ██████╗██████╗     ██████╗ ██████╗  ██████╗      ██╗███████╗ ██████╗████████╗███████╗
+████╗  ██║██║   ██║██║ ██╔╝██║████╗  ██║██╔════╝     ██╔════╝ ██╔════╝██╔══██╗    ██╔══██╗██╔══██╗██╔═══██╗     ██║██╔════╝██╔════╝╚══██╔══╝██╔════╝
+██╔██╗ ██║██║   ██║█████╔╝ ██║██╔██╗ ██║██║  ███╗    ██║  ███╗██║     ██████╔╝    ██████╔╝██████╔╝██║   ██║     ██║█████╗  ██║        ██║   ███████╗
+██║╚██╗██║██║   ██║██╔═██╗ ██║██║╚██╗██║██║   ██║    ██║   ██║██║     ██╔═══╝     ██╔═══╝ ██╔══██╗██║   ██║██   ██║██╔══╝  ██║        ██║   ╚════██║
+██║ ╚████║╚██████╔╝██║  ██╗██║██║ ╚████║╚██████╔╝    ╚██████╔╝╚██████╗██║         ██║     ██║  ██║╚██████╔╝╚█████╔╝███████╗╚██████╗   ██║   ███████║
+╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝      ╚═════╝  ╚═════╝╚═╝         ╚═╝     ╚═╝  ╚═╝ ╚═════╝  ╚════╝ ╚══════╝ ╚═════╝   ╚═╝   ╚══════╝
+"
+printf "*********************************************************************************************************************************************\n"
 # Array of GCP Projects which should not be automatically deleted
 DO_NOT_DELETE_PROJECTS=("live-application", "gcp-projects-nuke")
 
-ALL_GCP_PROJECTS=$(gcloud projects list --format=json | jq -r '.[] | .projectId')
-echo ">>>>>>  Executing gcp-projects-nuke.sh <<<<<<<"
+printf "Getting the list of all project_ids that do not start with 'sys-*'\n"
+# The sys-* projects are the gsuite/apps-script projects which shouldn't be deleted
+ALL_GCP_PROJECTS=$(gcloud projects list --sort-by=projectId --filter="-projectId=sys-*" --format=json | jq -r '.[] | .projectId')
 
+COUNTER=1
+printf "Itterating over the list of GCP Projects\n"
+printf "*********************************************************************************************************************************************\n"
 for gcp_project in $ALL_GCP_PROJECTS
 do
     if [[ " ${DO_NOT_DELETE_PROJECTS[*]} " =~ "$gcp_project" ]]; then
-        echo "### Skipping Deletion of GCP Project: '$gcp_project' from DO NOT DELETE list ###"
+        printMessage "\xE2\x99\xA0" "$COUNTER" "Skipping Deletion of GCP Project ID: '$gcp_project' as it's in DO_NOT_DELETE_PROJECTS list"
+        printf "\n"
     else
-        echo "*** NOT - Deleting GCP Project: $gcp_project ***"
+        printMessage "\xE2\x98\xA0" "$COUNTER" "Deleting GCP Project ID: $gcp_project"
         gcloud projects delete $gcp_project --quiet
-        echo "*** NOT - Deleted GCP Project: $gcp_project succesffully ***"
+        printMessage "\xE2\x98\xA0" "$COUNTER" "Deleted GCP Project ID: $gcp_project succesffully"
+        printf "\n"
     fi
 done
-echo ">>>>>>  Execution of gcp-projects-nuke.sh completed <<<<<<<"
+printf "*************************************************************************************************************************************************\n"
+printf "
+███████╗██╗  ██╗███████╗ ██████╗██╗   ██╗████████╗██╗ ██████╗ ███╗   ██╗     ██████╗ ██████╗ ███╗   ███╗██████╗ ██╗     ███████╗████████╗███████╗██████╗ 
+██╔════╝╚██╗██╔╝██╔════╝██╔════╝██║   ██║╚══██╔══╝██║██╔═══██╗████╗  ██║    ██╔════╝██╔═══██╗████╗ ████║██╔══██╗██║     ██╔════╝╚══██╔══╝██╔════╝██╔══██╗
+█████╗   ╚███╔╝ █████╗  ██║     ██║   ██║   ██║   ██║██║   ██║██╔██╗ ██║    ██║     ██║   ██║██╔████╔██║██████╔╝██║     █████╗     ██║   █████╗  ██║  ██║
+██╔══╝   ██╔██╗ ██╔══╝  ██║     ██║   ██║   ██║   ██║██║   ██║██║╚██╗██║    ██║     ██║   ██║██║╚██╔╝██║██╔═══╝ ██║     ██╔══╝     ██║   ██╔══╝  ██║  ██║
+███████╗██╔╝ ██╗███████╗╚██████╗╚██████╔╝   ██║   ██║╚██████╔╝██║ ╚████║    ╚██████╗╚██████╔╝██║ ╚═╝ ██║██║     ███████╗███████╗   ██║   ███████╗██████╔╝
+╚══════╝╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═════╝    ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝     ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚══════╝╚══════╝   ╚═╝   ╚══════╝╚═════╝                                                                                                                                                                                                                                                                                             
+"
